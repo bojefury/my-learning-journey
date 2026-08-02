@@ -30,7 +30,8 @@ export class MockPaymentProvider implements PaymentProvider {
   }
 }
 export class MockDigitalGoodsProvider implements DigitalGoodsProvider {
-  async fulfill(orderId: string, _key: string): Promise<ProviderResult> {
+  async fulfill(orderId: string, key: string): Promise<ProviderResult> {
+    void key;
     return { externalId: `mock-goods-${orderId}`, status: "TEST_PENDING" };
   }
 }

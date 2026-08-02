@@ -6,8 +6,27 @@ import { uploadBanner, uploadLogo, uploadProductImage } from "./actions";
 
 export const dynamic = "force-dynamic";
 
+interface ProductOption {
+  id: string;
+  name: string;
+}
+
+interface BannerPreview {
+  id: string;
+  title: string;
+  imageUrl: string | null;
+}
+
+interface StoreSettingsView {
+  logoUrl: string | null;
+}
+
 export default async function MediaPage() {
-  const [products, banners, settings] = await Promise.all([
+  const [products, banners, settings]: [
+    ProductOption[],
+    BannerPreview[],
+    StoreSettingsView | null,
+  ] = await Promise.all([
     prisma.product.findMany({
       select: { id: true, name: true },
       orderBy: { name: "asc" },
@@ -60,7 +79,7 @@ export default async function MediaPage() {
             Товар
             <select className="field" name="productId" required>
               <option value="">Выберите товар</option>
-              {products.map((product) => (
+              {products.map((product: ProductOption) => (
                 <option key={product.id} value={product.id}>
                   {product.name}
                 </option>
@@ -77,7 +96,7 @@ export default async function MediaPage() {
         <section>
           <h2>Баннеры</h2>
           <div className="product-grid">
-            {banners.map((banner) => (
+            {banners.map((banner: BannerPreview) => (
               <article className="panel" key={banner.id}>
                 <Image
                   src={banner.imageUrl!}
