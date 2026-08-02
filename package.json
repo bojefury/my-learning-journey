@@ -22,6 +22,7 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
     "@prisma/client": "^6.16.2",
+    "@vercel/blob": "^1.1.1",
     "argon2": "^0.44.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.468.0",
