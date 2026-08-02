@@ -11,7 +11,10 @@ import {
 } from "@/lib/auth-security";
 
 const credentialsSchema = z.object({
-  email: z.string().email().transform((value) => value.toLowerCase()),
+  email: z
+    .string()
+    .email()
+    .transform((value) => value.toLowerCase()),
   password: z.string().min(8).max(256),
 });
 
@@ -46,9 +49,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.sub!;
-        session.user.role = token.role as "USER" | "MANAGER" | "ADMIN";
+      if (session.user && token.sub) {
+        session.user.id = token.sub;
+        session.user.role = token.role;
       }
       return session;
     },

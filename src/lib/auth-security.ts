@@ -9,14 +9,20 @@ export function assertAuthSecret(environment = process.env) {
 }
 
 export async function verifyPassword(hash: string, password: string) {
+  // The algorithm is encoded in the PHC hash. Reject legacy/non-Argon2id
+  // hashes explicitly; VerifyOptions in argon2 does not accept a `type` field.
+  if (!hash.startsWith("$argon2id$")) return false;
   try {
-    return await argon2.verify(hash, password, { type: argon2.argon2id });
+    return await argon2.verify(hash, password);
   } catch {
     return false;
   }
 }
 
-export function safeRedirect(target: string | null | undefined, origin: string) {
+export function safeRedirect(
+  target: string | null | undefined,
+  origin: string,
+) {
   if (!target) return `${origin}/admin`;
   try {
     const url = new URL(target, origin);

@@ -94,7 +94,7 @@ export async function uploadBanner(
       const banner = await tx.banner.create({
         data: {
           title: parsed.data.title,
-          href: parsed.data.href || null,
+          href: parsed.data.href,
           imageUrl: uploadedUrl,
           active: true,
         },
