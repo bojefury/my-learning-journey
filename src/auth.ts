@@ -1,4 +1,5 @@
 import NextAuth from "next-auth";
+import { Role } from "@prisma/client";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { z } from "zod";
@@ -17,6 +18,14 @@ const credentialsSchema = z.object({
     .transform((value) => value.toLowerCase()),
   password: z.string().min(8).max(256),
 });
+
+function isRole(value: unknown): value is Role {
+  return (
+    value === Role.USER ||
+    value === Role.MANAGER ||
+    value === Role.ADMIN
+  );
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -48,17 +57,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) token.role = user.role;
       return token;
     },
-    session({ session, token }) {
-      if (session.user && token.sub) {
-        session.user.id = token.sub;
-        session.user.role = token.role;
-      }
-      return session;
-    },
-    redirect({ url, baseUrl }) {
-      return safeRedirect(url, baseUrl);
-    },
-  },
+  session({ session, token }) {
+  if (session.user && token.sub) {
+    session.user.id = token.sub;
+
+    if (isRole(token.role)) {
+      session.user.role = token.role;
+    }
+  }
+
+  return session;
+},
+redirect({ url, baseUrl }) {
+  return safeRedirect(url, baseUrl);
+},
+},
   cookies: {
     sessionToken: {
       name: `${process.env.NODE_ENV === "production" ? "__Secure-" : ""}authjs.session-token`,
