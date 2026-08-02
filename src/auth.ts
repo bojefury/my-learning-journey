@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import type { Role } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import {
@@ -17,6 +18,10 @@ const credentialsSchema = z.object({
     .transform((value) => value.toLowerCase()),
   password: z.string().min(8).max(256),
 });
+
+function isRole(value: unknown): value is Role {
+  return value === "USER" || value === "MANAGER" || value === "ADMIN";
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
@@ -49,7 +54,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return token;
     },
     session({ session, token }) {
-      if (session.user && token.sub) {
+      if (session.user && token.sub && isRole(token.role)) {
         session.user.id = token.sub;
         session.user.role = token.role;
       }
