@@ -62,10 +62,11 @@ export default function Home() {
         </div>
         <div className="hero-art">
           <Image
-            src="/brand/help-store-logo.jpg"
+            src="/api/media/logo"
             width={420}
             height={420}
             alt="Товарный знак Help Store"
+            unoptimized
           />
           <span className="hero-chip one">Регион проверен</span>
           <span className="hero-chip two">Тестовый режим</span>
