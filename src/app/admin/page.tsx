@@ -70,6 +70,9 @@ export default function Admin() {
           <Link className="btn primary" href="/admin/products">
             Управление каталогом
           </Link>
+          <Link className="btn" href="/admin/media">
+            Логотип и изображения
+          </Link>
         </div>
         <div className="panel">
           <p>
