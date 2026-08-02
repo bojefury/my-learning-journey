@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import type { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { deleteUploadedImage, uploadImage } from "@/lib/image-storage";
@@ -89,7 +90,7 @@ export async function uploadBanner(
   try {
     const uploadedUrl = await uploadImage(imageFrom(data), "banners");
     url = uploadedUrl;
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const banner = await tx.banner.create({
         data: {
           title: parsed.data.title,
@@ -130,7 +131,7 @@ export async function uploadProductImage(
   try {
     const uploadedUrl = await uploadImage(imageFrom(data), "products");
     url = uploadedUrl;
-    await prisma.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       const last = await tx.productImage.aggregate({
         where: { productId: parsed.data.productId },
         _max: { position: true },
