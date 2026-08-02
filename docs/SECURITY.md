@@ -2,8 +2,24 @@
 
 ## Реализовано в срезе
 
-Строгий TypeScript, Zod на checkout boundary, серверный пересчёт mock-цен, idempotency key, безопасные публичные ошибки, отсутствие секретов в client bundle и запрет индексации checkout/account/admin.
+Строгий TypeScript, Zod на checkout boundary, серверный пересчёт mock-цен, idempotency key, безопасные публичные ошибки, отсутствие секретов в client bundle и запрет индексации checkout/account/admin. Auth.js использует Prisma adapter и Credentials provider; пароли проверяются Argon2id, а `AUTH_SECRET` короче 32 символов отклоняется при запуске. Cookie сессии имеет `httpOnly`, `sameSite=lax` и `secure` в production.
+
+Layout `/admin` получает серверную сессию до рендера. Гость перенаправляется на `/login`, роль `USER` — на `/forbidden`. Проверка повторяется в server actions и route handlers, потому что layout не является границей безопасности API.
+
+## Матрица административных разрешений
+
+| Операция | USER | MANAGER | ADMIN |
+| --- | --- | --- | --- |
+| Каталог, цены и промокоды | — | Да | Да |
+| Обработка заказов | — | Да | Да |
+| Просмотр аудита | — | Да | Да |
+| Безвозвратное удаление | — | — | Да |
+| Назначение MANAGER/ADMIN | — | — | Да |
+
+Изменяющие операции записывают актёра, действие и сущность в `AdminAuditLog`. Проверка прав и запись аудита должны входить в каждую новую административную server action или route handler; для мутаций запись создаётся в одной транзакции с изменением.
+
+Вход ограничен пятью попытками на нормализованный email за 15 минут. Текущая реализация хранит счётчики в памяти одного процесса и предназначена для single-instance deployment и тестов.
 
 ## Обязательно до production
 
-Auth.js с database adapter, Argon2id, httpOnly/secure/sameSite cookies, CSRF-защита, server-side RBAC, Redis rate limiting, CSP и security headers, webhook HMAC с постоянным временем сравнения, шифрование ключей, audit retention и redaction персональных данных. Проверять права на каждом service method. Заказ и платёж создавать транзакционно, provider events дедуплицировать по внешнему ID. Секреты хранить в secret manager, не в Git.
+Перед горизонтальным масштабированием заменить in-memory rate limiter на атомарный Redis limiter. Также необходимы CSP и security headers, webhook HMAC с постоянным временем сравнения, шифрование ключей, политика хранения аудита и удаление персональных данных из metadata. Заказ и платёж создавать транзакционно, provider events дедуплицировать по внешнему ID. Секреты хранить в secret manager, не в Git.
